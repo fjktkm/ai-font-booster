@@ -1,0 +1,14 @@
+{
+	"name": "Python",
+	"dockerComposeFile": "../../docker-compose.yml",
+	"service": "backend",
+	"workspaceFolder": "/app",
+	"shutdownAction": "stopCompose",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	}
+}

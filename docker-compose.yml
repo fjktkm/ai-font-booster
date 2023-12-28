@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  frontend:
+    image: node:14
+    volumes:
+      - ./frontend:/app
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm start"
+
+  backend:
+    image: python:3.8
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    command: sh -c "pip install -r requirements.txt && uvicorn main:app --reload --host 0.0.0.0 --port 8000"

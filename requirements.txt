@@ -1,0 +1,8 @@
+# common
+black
+jupyter
+
+# backend
+uvicorn
+fastapi
+nuitka

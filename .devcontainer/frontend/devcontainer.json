@@ -1,7 +1,0 @@
-{
-	"name": "Node.js",
-	"dockerComposeFile": "../../docker-compose.yml",
-	"service": "frontend",
-	"workspaceFolder": "/app",
-	"shutdownAction": "stopCompose"
-}

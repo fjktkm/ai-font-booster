@@ -1,0 +1,26 @@
+{
+  "name": "ai-font-booster",
+  "version": "1.0.0",
+  "description": "機械学習によりフォントの不足しているグリフを補完するアプリケーションです",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --no-sandbox"
+  },
+  "build": {
+    "appId": "your.app.id",
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.1.0"
+  }
+}

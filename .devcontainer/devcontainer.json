@@ -1,0 +1,19 @@
+{
+	"name": "Electron and Python",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-docker",
+				"ms-python.python",
+				"ms-python.black-formatter",
+				"ms-toolsai.jupyter",
+				"dbaeumer.vscode-eslint",
+				"mhutchie.git-graph"
+			]
+		}
+	},
+	"postCreateCommand": "python3.11 -m venv /workspaces/ai-font-booster/.venv && . /workspaces/ai-font-booster/.venv/bin/activate && pip install -r requirements.txt && npm install --prefix frontend"
+}

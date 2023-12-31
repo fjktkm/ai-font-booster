@@ -15,5 +15,5 @@
 			]
 		}
 	},
-	"postCreateCommand": "python3.11 -m venv /workspaces/ai-font-booster/.venv && . /workspaces/ai-font-booster/.venv/bin/activate && pip install -r requirements.txt && npm install --prefix frontend"
+	"postCreateCommand": "python3.11 -m venv ./.venv && . ./.venv/bin/activate && pip install -r requirements.txt && npm install --prefix frontend"
 }

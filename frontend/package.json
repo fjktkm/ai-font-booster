@@ -22,5 +22,9 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^28.1.0"
+  },
+  "dependencies": {
+    "fontkit": "^2.0.2",
+    "node-fetch": "^3.3.2"
   }
 }

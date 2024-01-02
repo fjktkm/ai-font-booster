@@ -1,23 +1,35 @@
-<!--index.html-->
-
 <!DOCTYPE html>
 <html>
-
 <head>
-    <meta charset="UTF-8">
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <title>Hello World!</title>
+  <meta charset="UTF-8">
+  <title>AI Font Booster</title>
+  <link rel="stylesheet" href="index.css" type="text/css">
 </head>
-
 <body>
-    <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <span id="electron-version"></span>.
-
-    <!-- このプロセスで他ファイルを require して実行することもできます -->
-    <script src="./renderer.js"></script>
+  <h1>AI Font Booster</h1>
+  <div class="wrapper">
+    <div class="container left">
+      <div class="container top">
+        <h2>Font A</h2>
+        <input type="button" value="importA" />
+        <div class="font-display-A">テスト</div>
+      </div>
+      <div class="container bottom">
+        <h2>Font B</h2>
+        <input type="button" value="importB" />
+        <div class="font-display-B">テスト</div>
+      </div>
+    </div>
+    <div class="container center">
+      <input type="button" value="fusion" />
+    </div>
+    <div class="container right">
+      <h2>Boosted Font</h2>
+      <input type="button" value="export" />
+      <div class="font-display-C">テスト</div>
+    </div>
+  </div>
+  <script src="import.js"></script>
+  <script src="fusion.js"></script>
 </body>
-
 </html>

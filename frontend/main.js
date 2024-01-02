@@ -1,46 +1,139 @@
-// main.js
+// Electron のモジュールを取得
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const path = require('path');
 
-// このモジュールはアプリケーションの生き死にを制御し、ネイティブブラウザウインドウを作成します
-const { app, BrowserWindow } = require('electron')
-const path = require('node:path')
+// メインウィンドウはグローバル参照で保持
+// 空になれば自動的にガベージコレクションが働き、開放される
+let mainWindow
 
-const createWindow = () => {
-    // ブラウザウインドウを作成します。
-    const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+let fontPathA
+let fontPathB
+
+// Electron のウィンドウを生成する関数
+function createWindow() {
+    // ウィンドウ生成（横幅 800、高さ 600、フレームを含まないサイズ指定
+    mainWindow = new BrowserWindow({ 
+        width: 800, 
+        height: 600, 
+        useContentSize: true,
         webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: true,
             preload: path.join(__dirname, 'preload.js')
         }
-    })
+    });
 
-    // そしてアプリの index.html を読み込みます。
+    // 表示対象の HTML ファイルを読み込む
     mainWindow.loadFile('index.html')
 
-    // デベロッパー ツールを開きます。
-    // mainWindow.webContents.openDevTools()
+    // ウィンドウを閉じた時に発生する処理
+    mainWindow.on('closed', () => {
+        // メインウィンドウの値を null にして、ガベージコレクタに開放させる
+        mainWindow = null
+    })
 }
 
-// このメソッドは、Electron の初期化が完了し、
-// ブラウザウインドウの作成準備ができたときに呼ばれます。
-// 一部のAPIはこのイベントが発生した後にのみ利用できます。
-app.whenReady().then(() => {
-    createWindow()
+// Electronの初期化完了後に、ウィンドウ生成関数を実行
+app.on('ready', createWindow)
 
-    app.on('activate', () => {
-        // macOS では、Dock アイコンのクリック時に他に開いているウインドウがない
-        // 場合、アプリのウインドウを再作成するのが一般的です。
-        if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
-})
-
-// macOS を除き、全ウインドウが閉じられたときに終了します。 ユーザーが
-// Cmd + Q で明示的に終了するまで、アプリケーションとそのメニューバーを
-// アクティブにするのが一般的です。
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
+    // macOS の場合、アプリを完全に終了するのではなく
+    // メニューバーに残す（ユーザーが Ctrl + Q を押すまで終了しない）ことが
+    // 一般的であるため、これを表現する
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
 })
 
-// このファイルでは、アプリ内のとある他のメインプロセスコードを
-// インクルードできます。 
-// 別々のファイルに分割してここで require することもできます。
+// アプリが実行された時に発生
+app.on('activate', function () {
+    // macOS の場合、アプリ起動処理（Dock アイコンクリック）時に
+    // 実行ウィンドウが空であれば、
+    // アプリ内にウィンドウを再作成することが一般的
+    if (mainWindow === null) {
+        createWindow()
+    }
+})
+
+//フォントファイルの読み込み
+ipcMain.on('open-file-dialog-A',(event) => {
+    dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile'],
+        filters:[
+            {name:'Font Files',extensions:['ttf','otf','ttc','otc']}
+        ]
+    }).then(result => {
+        if (!result.canceled) {
+            //パスを格納
+            fontPathA = result.filePaths;
+            //Rendererプロセスにファイルのパスを送信
+            mainWindow.webContents.send('selected-file-A', fontPathA);
+        }
+    }).catch(err => {
+        console.log(err);
+    });
+});
+
+ipcMain.on('open-file-dialog-B',(event) => {
+    dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile'],
+        filters:[
+            {name:'Font Files',extensions:['ttf','otf','ttc','otc']}
+        ]
+    }).then(result => {
+        if (!result.canceled) {
+            //パスを格納
+            fontPathB = result.filePaths;
+            //Rendererプロセスにファイルのパスを送信
+            mainWindow.webContents.send('selected-file-B', result.filePaths);
+        }
+    }).catch(err => {
+        console.log(err);
+    });
+});
+
+ipcMain.handle('fusion-fonts', async(event) => {
+    const url = 'http://localhost:8000';
+    const formData = new URLSearchParams();
+
+    //フォントのファイルパスをPOSTのBodyに追加
+    formData.append('fontPathA', fontPathA);
+    formData.append('fontPathB', fontPathB);
+
+    try {
+        // fetchを動的にインポートする
+        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+        //fetchでHTTP POSTリクエストを送る
+        const response = await fetch(url,{
+            method: 'POST',
+            headers:{
+                'Content-Type':'application/x-www-form-urleoncoded',
+            },
+            body:formData,
+        });
+
+        // 応答をJSONとして処理（もしJSONで応答が返ってくる場合）
+        const data = await response.json();
+
+        // 応答データを返す
+        return data.result;
+
+    } catch (error) {
+        // エラーが発生した場合、エラー情報をログに出力
+        console.error('Error sending POST request:', error);
+        throw error;
+    }
+});
+
+ipcMain.handle('fusion-fonts-mock', async(event) => {
+    const mockResponseData = {
+        result: fontPathA
+    };
+
+    // ダミーで3秒間待つ
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    return mockResponseData.result
+});
+

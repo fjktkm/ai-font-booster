@@ -1,5 +1,7 @@
 //fusionボタンの取得
-const fusionButton = document.querySelector('input[type="button"][value="fusion"]');
+const fusionButton = document.querySelector('#fusion');
+var exportButton_ = document.querySelector('#export');
+var fusionProgress = document.querySelector('#fusion-prog');
 
 //合成したフォントを表示するdiv
 const fontDivC = document.querySelector('.font-display-C');
@@ -9,7 +11,9 @@ const fontDivC = document.querySelector('.font-display-C');
 fusionButton.addEventListener('click', async () => {
     console.log('Button clicked!'); // これが表示されるか確認
     //処理中はボタンを無効化
-    fusionButton.disabled = true;
+    fusionButton.classList.add('disabled');
+    // 初期化段階でindeterminateの状態にする
+    fusionProgress.className = 'indeterminate';
 
     try {
         //ipcRendererを利用してメインプロセスにHTTPリクエストを飛ばすよう要求
@@ -41,6 +45,11 @@ fusionButton.addEventListener('click', async () => {
         console.error('IPC request failed:', error);
     } finally {
         // 応答があったらボタンを再度有効化
-        fusionButton.disabled = false;
+        fusionButton.classList.remove('disabled');
+        exportButton_.removeAttribute('disabled');
+        // class名を変更
+        fusionProgress.className = 'determinate';
+        // styleのwidthを100%に設定
+        fusionProgress.style.width = '100%';
     }
 });

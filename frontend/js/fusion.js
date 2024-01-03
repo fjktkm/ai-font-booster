@@ -57,3 +57,15 @@ fusionButton.addEventListener('click', async () => {
 exportButton_.addEventListener('click', () => {
     window.electron.ipcRenderer.send('open-file-dialog-C');
 });
+
+//ファイル保存成功
+window.electron.ipcRenderer.on('file-copied', (event, filePath) => {
+    // MaterializeのToastを生成
+    M.toast({ html: `フォントを保存しました`, displayLength: 4000 });
+});
+
+//ファイル保存失敗
+window.electron.ipcRenderer.on('file-copy-error', (event, errorMessage) => {
+    // エラーToastを生成
+    M.toast({html: `フォントの保存に失敗しました: ${errorMessage}`, displayLength: 4000});
+});

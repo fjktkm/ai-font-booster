@@ -10,7 +10,7 @@ contextBridge.exposeInMainWorld('electron', {
             }
         },
         on: (channel, func) => {
-            let validChannels = ['selected-file-A', 'selected-file-B', 'selected-file-C'];
+            let validChannels = ['selected-file-A', 'selected-file-B', 'selected-file-C', 'file-copied', 'file-copy-error'];
             if (validChannels.includes(channel)) {
                 ipcRenderer.on(channel, (event, ...args) => func(...args));
             }

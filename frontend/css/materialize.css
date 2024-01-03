@@ -9091,3 +9091,12 @@ body {
 #display {
   font-family: 'Noto Sans JP', sans-serif;
 }
+
+#toast-container {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin-right: 10px; /* 右端からのマージンを設定 */
+  margin-top: 10px; /* 上端からのマージンを設定 */
+}

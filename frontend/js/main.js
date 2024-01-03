@@ -110,12 +110,12 @@ ipcMain.on('open-file-dialog-C', async (event) => {
         if (!result.canceled && fontPathC) {
             await fs.copyFile(fontPathC[0].replace(/\\/g, '/'), result.filePath);
             // コピーが成功した場合の処理をここに書く
-            //event.sender.send('file-copied', result.filePath);
+            mainWindow.webContents.send('file-copied', result.filePath);
         }
     } catch (error) { // エラーオブジェクトがここで定義される
         console.error('An error occurred:', error);
         // エラー処理をここに書く
-        //event.sender.send('file-copy-failed', error.message);
+        mainWindow.webContents.send('file-copy-failed', error.message);
     }
 })
 

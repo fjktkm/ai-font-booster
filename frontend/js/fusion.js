@@ -53,3 +53,7 @@ fusionButton.addEventListener('click', async () => {
         fusionProgress.style.width = '100%';
     }
 });
+
+exportButton_.addEventListener('click', () => {
+    window.electron.ipcRenderer.send('open-file-dialog-C');
+});

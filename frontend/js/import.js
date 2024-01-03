@@ -11,13 +11,20 @@ const fontDivA = document.querySelector('.font-display-A');
 const fontDivB = document.querySelector('.font-display-B');
 
 function getFontName(fontPath) {
+  console.log(`getFontName called with path: ${fontPath}`); // 関数が呼び出されていることを確認
   return new Promise((resolve, reject) => {
-    window.fontkit.open(fontPath).then(font => {
-      const fontName = font.postscriptName;
-      resolve(fontName);
-    }).catch(error => {
-      reject(error);
-    });
+    console.log(`Attempting to open font: ${fontPath}`);
+    window.electronFontKit.open(fontPath)
+      .then(font => {
+        console.log(`Font successfully opened.`);
+        const fontName = font.postscriptName;
+        console.log(`Font loaded: ${fontName}`); // フォントの読み込みが完了したことを確認
+        resolve(fontName);
+      })
+      .catch(error => {
+        console.error(`Error opening font: ${error}`); // エラーが発生した場合は内容をログに出力
+        reject(error);
+      });
   });
 }
 
@@ -40,6 +47,7 @@ window.electron.ipcRenderer.on('selected-file-A', async (paths) => {
 
   //const fontName = await getFontName(fontPath);
   const fontName = "testA";
+  console.log(fontName);
 
   const newStyle = document.createElement('style');
   newStyle.appendChild(document.createTextNode(`
@@ -72,6 +80,7 @@ window.electron.ipcRenderer.on('selected-file-B', async (paths) => {
 
   //const fontName = await getFontName(fontPath);
   const fontName = "testB";
+  console.log(fontName);
 
   const newStyle = document.createElement('style');
   newStyle.appendChild(document.createTextNode(`

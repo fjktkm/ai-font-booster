@@ -4,7 +4,7 @@ const fontkit = require('fontkit');
 contextBridge.exposeInMainWorld('electron', {
     ipcRenderer: {
         send: (channel, data) => {
-            let validChannels = ['open-file-dialog-A', 'open-file-dialog-B']; // Valid channels list updated
+            let validChannels = ['open-file-dialog-A', 'open-file-dialog-B', 'open-file-dialog-C']; // Valid channels list updated
             if (validChannels.includes(channel)) {
                 ipcRenderer.send(channel, data);
             }
@@ -24,10 +24,8 @@ contextBridge.exposeInMainWorld('electron', {
     }
 })
 
-contextBridge.exposeInMainWorld('fontkit', {
-    open: (path, callback) => {
-        // `fontkit.open` メソッドをエクスポートする
-        // セキュリティのため、直接コールバックを渡さないで、プロミスベースのAPIを公開するのが良いです。
+contextBridge.exposeInMainWorld('electronFontKit', {
+    open: (path) => {
         return new Promise((resolve, reject) => {
             fontkit.open(path, (error, font) => {
                 if (error) {

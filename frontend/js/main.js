@@ -1,5 +1,6 @@
 // Electron のモジュールを取得
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const fs = require('fs').promises;
 const path = require('path');
 
 // メインウィンドウはグローバル参照で保持
@@ -8,13 +9,14 @@ let mainWindow
 
 let fontPathA
 let fontPathB
+let fontPathC
 
 // Electron のウィンドウを生成する関数
 function createWindow() {
     // ウィンドウ生成（横幅 800、高さ 600、フレームを含まないサイズ指定
-    mainWindow = new BrowserWindow({ 
-        width: 800, 
-        height: 600, 
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
         useContentSize: true,
         webPreferences: {
             nodeIntegration: true,
@@ -56,11 +58,11 @@ app.on('activate', function () {
 })
 
 //フォントファイルの読み込み
-ipcMain.on('open-file-dialog-A',(event) => {
+ipcMain.on('open-file-dialog-A', (event) => {
     dialog.showOpenDialog(mainWindow, {
         properties: ['openFile'],
-        filters:[
-            {name:'Font Files',extensions:['ttf','otf','ttc','otc']}
+        filters: [
+            { name: 'Font Files', extensions: ['ttf', 'otf', 'ttc', 'otc'] }
         ]
     }).then(result => {
         if (!result.canceled) {
@@ -74,11 +76,11 @@ ipcMain.on('open-file-dialog-A',(event) => {
     });
 });
 
-ipcMain.on('open-file-dialog-B',(event) => {
+ipcMain.on('open-file-dialog-B', (event) => {
     dialog.showOpenDialog(mainWindow, {
         properties: ['openFile'],
-        filters:[
-            {name:'Font Files',extensions:['ttf','otf','ttc','otc']}
+        filters: [
+            { name: 'Font Files', extensions: ['ttf', 'otf', 'ttc', 'otc'] }
         ]
     }).then(result => {
         if (!result.canceled) {
@@ -92,7 +94,32 @@ ipcMain.on('open-file-dialog-B',(event) => {
     });
 });
 
-ipcMain.handle('fusion-fonts', async(event) => {
+ipcMain.on('open-file-dialog-C', async (event) => {
+    try {
+        const result = await dialog.showSaveDialog(mainWindow, {
+            defaultPath:  `${app.getPath('documents')}/export.ttf`,
+            filters: [
+                {
+                    extensions: ['ttf'], // 拡張子の前にドット"."は不要です
+                    name: 'TrueTypeフォント'
+                }
+            ],
+            properties: ['showOverwriteConfirmation'] 
+        });
+
+        if (!result.canceled && fontPathC) {
+            await fs.copyFile(fontPathC[0].replace(/\\/g, '/'), result.filePath);
+            // コピーが成功した場合の処理をここに書く
+            //event.sender.send('file-copied', result.filePath);
+        }
+    } catch (error) { // エラーオブジェクトがここで定義される
+        console.error('An error occurred:', error);
+        // エラー処理をここに書く
+        //event.sender.send('file-copy-failed', error.message);
+    }
+})
+
+ipcMain.handle('fusion-fonts', async (event) => {
     const url = 'http://localhost:8000';
     const formData = new URLSearchParams();
 
@@ -102,15 +129,15 @@ ipcMain.handle('fusion-fonts', async(event) => {
 
     try {
         // fetchを動的にインポートする
-        const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+        const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
         //fetchでHTTP POSTリクエストを送る
-        const response = await fetch(url,{
+        const response = await fetch(url, {
             method: 'POST',
-            headers:{
-                'Content-Type':'application/x-www-form-urleoncoded',
+            headers: {
+                'Content-Type': 'application/x-www-form-urleoncoded',
             },
-            body:formData,
+            body: formData,
         });
 
         // 応答をJSONとして処理（もしJSONで応答が返ってくる場合）
@@ -126,13 +153,16 @@ ipcMain.handle('fusion-fonts', async(event) => {
     }
 });
 
-ipcMain.handle('fusion-fonts-mock', async(event) => {
+ipcMain.handle('fusion-fonts-mock', async (event) => {
     const mockResponseData = {
         result: fontPathA
     };
 
+
     // ダミーで3秒間待つ
     await new Promise(resolve => setTimeout(resolve, 3000));
+
+    fontPathC = mockResponseData.result;
 
     return mockResponseData.result
 });

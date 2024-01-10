@@ -1,0 +1,53 @@
+@charset "utf-8";
+
+/* スタイルはここに追加 */
+.wrapper {
+  display: flex;
+}
+
+.container {
+  /*border: 1px solid #000; */
+  /* 境界線を見やすくするため */
+  padding: 20px;
+  /* 中身の余白 */
+}
+
+.left,
+.right {
+  width: 40%;
+  /* コンテナーを横幅の50%にする */
+}
+
+.center {
+  width: 20%;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+}
+
+.top,
+.bottom {
+  height: 150px;
+  /* 高さを指定 */
+  margin-bottom: 10px;
+  /* 下のコンテナーとの間隔 */
+}
+
+/* 最後のコンテナーの下に余分な余白ができないように */
+.left .container:last-child {
+  margin-bottom: 0;
+}
+
+.font-display-A {
+  font-size: xx-large;
+}
+
+.font-display-B {
+  font-size: xx-large;
+}
+
+.font-display-C {
+  font-size: xx-large;
+}

@@ -5,4 +5,5 @@ jupyter
 # backend
 uvicorn
 fastapi
-nuitka
+fontTools
+python-multipart

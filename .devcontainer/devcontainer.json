@@ -15,5 +15,6 @@
 			]
 		}
 	},
-	"postCreateCommand": "python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt && cd frontend && yarn install"
+	"postCreateCommand": "python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt && cd frontend && yarn install",
+	"postStartCommand": "/etc/init.d/dbus start"
 }

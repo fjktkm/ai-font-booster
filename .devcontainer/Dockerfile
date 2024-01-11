@@ -1,4 +1,4 @@
-FROM electronuserland/builder:wine
+FROM electronuserland/builder:wine-mono
 
 RUN apt-get update && apt-get install -y \
     curl \

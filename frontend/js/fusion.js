@@ -17,7 +17,7 @@ fusionButton.addEventListener('click', async () => {
 
     try {
         //ipcRendererを利用してメインプロセスにHTTPリクエストを飛ばすよう要求
-        const response = await window.electron.ipcRenderer.invoke('fusion-fonts-mock');
+        const response = await window.electron.ipcRenderer.invoke('fusion-fonts');
 
         //成功した場合の処理
         console.log(response)
@@ -40,13 +40,14 @@ fusionButton.addEventListener('click', async () => {
         // HTML要素にフォントを適用します。
         fontDivC.style.fontFamily = fontName;
 
+        exportButton_.removeAttribute('disabled');
+
     } catch (error) {
         // エラー処理
         console.error('IPC request failed:', error);
     } finally {
         // 応答があったらボタンを再度有効化
         fusionButton.classList.remove('disabled');
-        exportButton_.removeAttribute('disabled');
         // class名を変更
         fusionProgress.className = 'determinate';
         // styleのwidthを100%に設定
@@ -67,5 +68,5 @@ window.electron.ipcRenderer.on('file-copied', (event, filePath) => {
 //ファイル保存失敗
 window.electron.ipcRenderer.on('file-copy-error', (event, errorMessage) => {
     // エラーToastを生成
-    M.toast({html: `フォントの保存に失敗しました: ${errorMessage}`, displayLength: 4000});
+    M.toast({ html: `フォントの保存に失敗しました: ${errorMessage}`, displayLength: 4000 });
 });

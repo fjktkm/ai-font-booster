@@ -1,6 +1,7 @@
 // Electron のモジュールを取得
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs').promises;
+const { createReadStream, writeFileSync } = require('fs');
 const path = require('path');
 
 // メインウィンドウはグローバル参照で保持
@@ -97,14 +98,14 @@ ipcMain.on('open-file-dialog-B', (event) => {
 ipcMain.on('open-file-dialog-C', async (event) => {
     try {
         const result = await dialog.showSaveDialog(mainWindow, {
-            defaultPath:  `${app.getPath('documents')}/export.ttf`,
+            defaultPath: `${app.getPath('documents')}/export.ttf`,
             filters: [
                 {
                     extensions: ['ttf'], // 拡張子の前にドット"."は不要です
                     name: 'TrueTypeフォント'
                 }
             ],
-            properties: ['showOverwriteConfirmation'] 
+            properties: ['showOverwriteConfirmation']
         });
 
         if (!result.canceled && fontPathC) {
@@ -120,31 +121,50 @@ ipcMain.on('open-file-dialog-C', async (event) => {
 })
 
 ipcMain.handle('fusion-fonts', async (event) => {
-    const url = 'http://localhost:8000';
-    const formData = new URLSearchParams();
-
-    //フォントのファイルパスをPOSTのBodyに追加
-    formData.append('fontPathA', fontPathA);
-    formData.append('fontPathB', fontPathB);
+    const url = 'http://localhost:50113/merge-fonts/';
 
     try {
         // fetchを動的にインポートする
         const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-        //fetchでHTTP POSTリクエストを送る
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urleoncoded',
-            },
-            body: formData,
+        // form-dataを動的にインポートする
+        const FormData = await import('form-data').then(module => module.default);
+        const formData = new FormData();
+
+        // フォントファイルを追加
+        formData.append('font1', createReadStream(fontPathA[0].replace(/\\/g, '/')), {
+            filename: 'font1.ttf',
+            contentType: 'font/ttf'
+        });
+        formData.append('font2', createReadStream(fontPathB[0].replace(/\\/g, '/')), {
+            filename: 'font2.ttf',
+            contentType: 'font/ttf'
         });
 
-        // 応答をJSONとして処理（もしJSONで応答が返ってくる場合）
-        const data = await response.json();
+        // POSTリクエストを送信
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: formData.getHeaders()
+        });
 
-        // 応答データを返す
-        return data.result;
+        if (response.ok) {
+            // ArrayBufferとしてレスポンスを取得し、Bufferに変換
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            // ダウンロードしたフォントファイルを保存するパス
+            const savePath = path.join(__dirname, 'merged_font.ttf');
+
+            // マージされたフォントファイルを保存
+            writeFileSync(savePath, buffer);
+
+            // 保存したファイルのパスを返す
+            return savePath;
+        } else {
+            const errorText = await response.text();
+            throw new Error(`サーバーからの応答状況: ${response.status}\n${errorText}`);
+        }
 
     } catch (error) {
         // エラーが発生した場合、エラー情報をログに出力

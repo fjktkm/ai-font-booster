@@ -1,8 +1,12 @@
 FROM electronuserland/builder:wine-mono
 
 RUN apt-get update && apt-get install -y \
-    curl \
     build-essential \
+    fonts-ipaexfont \
+    fonts-noto-cjk \
+    git
+
+RUN apt-get install -y \
     libasound2 \
     libxss1 \
     libgtk-3-0 \
@@ -11,9 +15,13 @@ RUN apt-get update && apt-get install -y \
     libgbm1 \
     libgl1-mesa-glx \
     libx11-xcb1 \
-    dbus-x11 \
+    dbus-x11
+
+RUN apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    patchelf \
+    ccache
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*

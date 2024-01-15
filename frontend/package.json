@@ -4,7 +4,7 @@
   "description": "機械学習によりフォントの不足しているグリフを補完するアプリケーションです",
   "main": "js/main.js",
   "scripts": {
-    "start": "electron . --no-sandbox",
+    "start": "dbus-launch electron . --no-sandbox --disable-gpu",
     "pack": "electron-builder --dir",
     "dist": "electron-builder -wl"
   },

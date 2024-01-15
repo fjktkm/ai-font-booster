@@ -135,7 +135,7 @@ ipcMain.on('open-file-dialog-C', async (event) => {
         });
 
         if (!result.canceled && fontPathC) {
-            await fs.copyFile(fontPathC[0].replace(/\\/g, '/'), result.filePath);
+            await fs.copyFile(fontPathC.replace(/\\/g, '/'), result.filePath);
             // コピーが成功した場合の処理をここに書く
             mainWindow.webContents.send('file-copied', result.filePath);
         }
@@ -147,7 +147,7 @@ ipcMain.on('open-file-dialog-C', async (event) => {
 })
 
 ipcMain.handle('fusion-fonts', async (event) => {
-    const url = 'http://localhost:50113/merge-fonts/';
+    const url = 'http://127.0.0.1:50113/merge-fonts/';
 
     try {
         // fetchを動的にインポートする
@@ -178,15 +178,25 @@ ipcMain.handle('fusion-fonts', async (event) => {
             // ArrayBufferとしてレスポンスを取得し、Bufferに変換
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
+            let savePath;
 
             // ダウンロードしたフォントファイルを保存するパス
-            const savePath = path.join(__dirname, 'merged_font.ttf');
+            if (app.isPackaged) {
+                savePath = path.join(process.resourcesPath, 'merged_font.ttf');
+            }
+            else {
+                savePath = path.join(__dirname, '..', 'merged_font.ttf');
+            }
+
 
             // マージされたフォントファイルを保存
             writeFileSync(savePath, buffer);
 
             // 保存したファイルのパスを返す
+            console.log(savePath);
+            fontPathC = savePath;
             return savePath;
+
         } else {
             const errorText = await response.text();
             throw new Error(`サーバーからの応答状況: ${response.status}\n${errorText}`);

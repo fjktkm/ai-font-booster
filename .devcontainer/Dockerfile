@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM electronuserland/builder:wine-mono
 
 RUN apt-get update && apt-get install -y \
     curl \
@@ -12,11 +12,8 @@ RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libx11-xcb1 \
     dbus-x11 \
-    python3.11 \
+    python3 \
     python3-pip \
-    python3.11-venv \
+    python3-venv \
     git \
     && rm -rf /var/lib/apt/lists/*
-
-RUN curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
-    apt-get update && apt-get install -y nodejs

@@ -4,13 +4,12 @@
   "description": "機械学習によりフォントの不足しているグリフを補完するアプリケーションです",
   "main": "js/main.js",
   "scripts": {
-    "start": "electron . --no-sandbox"
+    "start": "electron . --no-sandbox",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -wl"
   },
   "build": {
-    "appId": "your.app.id",
-    "mac": {
-      "target": "dmg"
-    },
+    "appId": "your.id",
     "win": {
       "target": "nsis"
     },
@@ -21,7 +20,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^28.1.0"
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
   },
   "dependencies": {
     "fontkit": "^2.0.2",

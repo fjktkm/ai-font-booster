@@ -21,7 +21,7 @@ fusionButton.addEventListener('click', async () => {
 
         //成功した場合の処理
         console.log(response)
-        const fontPath = response[0].replace(/\\/g, '/');
+        const fontPath = response.replace(/\\/g, '/');
 
         //const fontName = await getFontName(fontPath);
         const fontName = "testC";

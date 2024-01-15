@@ -3,6 +3,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs').promises;
 const { createReadStream, writeFileSync } = require('fs');
 const path = require('path');
+const { execFile } = require('child_process');
 
 // メインウィンドウはグローバル参照で保持
 // 空になれば自動的にガベージコレクションが働き、開放される
@@ -11,6 +12,8 @@ let mainWindow
 let fontPathA
 let fontPathB
 let fontPathC
+
+let externalProcess = null;
 
 // Electron のウィンドウを生成する関数
 function createWindow() {
@@ -37,9 +40,32 @@ function createWindow() {
 }
 
 // Electronの初期化完了後に、ウィンドウ生成関数を実行
-app.on('ready', createWindow)
+app.on('ready', () => {
+    createWindow();
+
+    let externalExePath;
+
+    // アプリケーションがビルドされてパッケージされているかどうかのチェック
+    if (app.isPackaged) {
+        // ビルドされたアプリの場合、resourcesディレクトリの下にserverディレクトリがある
+        externalExePath = path.join(process.resourcesPath, 'server', 'main.exe');
+
+        // 別のEXEを実行する
+        externalProcess = execFile(externalExePath, (error, stdout, stderr) => {
+            if (error) {
+                throw error;
+            }
+            console.log(stdout);
+        });
+    }
+});
 
 app.on('window-all-closed', () => {
+    // 外部プロセスが存在していれば終了する
+    if (externalProcess !== null) {
+        externalProcess.kill(); // プロセスを終了
+        externalProcess = null;
+    }
     // macOS の場合、アプリを完全に終了するのではなく
     // メニューバーに残す（ユーザーが Ctrl + Q を押すまで終了しない）ことが
     // 一般的であるため、これを表現する
@@ -109,7 +135,7 @@ ipcMain.on('open-file-dialog-C', async (event) => {
         });
 
         if (!result.canceled && fontPathC) {
-            await fs.copyFile(fontPathC[0].replace(/\\/g, '/'), result.filePath);
+            await fs.copyFile(fontPathC.replace(/\\/g, '/'), result.filePath);
             // コピーが成功した場合の処理をここに書く
             mainWindow.webContents.send('file-copied', result.filePath);
         }
@@ -121,7 +147,7 @@ ipcMain.on('open-file-dialog-C', async (event) => {
 })
 
 ipcMain.handle('fusion-fonts', async (event) => {
-    const url = 'http://localhost:50113/merge-fonts/';
+    const url = 'http://127.0.0.1:50113/merge-fonts/';
 
     try {
         // fetchを動的にインポートする
@@ -152,15 +178,25 @@ ipcMain.handle('fusion-fonts', async (event) => {
             // ArrayBufferとしてレスポンスを取得し、Bufferに変換
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
+            let savePath;
 
             // ダウンロードしたフォントファイルを保存するパス
-            const savePath = path.join(__dirname, 'merged_font.ttf');
+            if (app.isPackaged) {
+                savePath = path.join(process.resourcesPath, 'merged_font.ttf');
+            }
+            else {
+                savePath = path.join(__dirname, '..', 'merged_font.ttf');
+            }
+
 
             // マージされたフォントファイルを保存
             writeFileSync(savePath, buffer);
 
             // 保存したファイルのパスを返す
+            console.log(savePath);
+            fontPathC = savePath;
             return savePath;
+
         } else {
             const errorText = await response.text();
             throw new Error(`サーバーからの応答状況: ${response.status}\n${errorText}`);

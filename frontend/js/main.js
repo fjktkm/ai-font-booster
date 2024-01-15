@@ -3,6 +3,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const fs = require('fs').promises;
 const { createReadStream, writeFileSync } = require('fs');
 const path = require('path');
+const { execFile } = require('child_process');
 
 // メインウィンドウはグローバル参照で保持
 // 空になれば自動的にガベージコレクションが働き、開放される
@@ -11,6 +12,8 @@ let mainWindow
 let fontPathA
 let fontPathB
 let fontPathC
+
+let externalProcess = null;
 
 // Electron のウィンドウを生成する関数
 function createWindow() {
@@ -37,9 +40,32 @@ function createWindow() {
 }
 
 // Electronの初期化完了後に、ウィンドウ生成関数を実行
-app.on('ready', createWindow)
+app.on('ready', () => {
+    createWindow();
+
+    let externalExePath;
+
+    // アプリケーションがビルドされてパッケージされているかどうかのチェック
+    if (app.isPackaged) {
+        // ビルドされたアプリの場合、resourcesディレクトリの下にserverディレクトリがある
+        externalExePath = path.join(process.resourcesPath, 'server', 'main.exe');
+
+        // 別のEXEを実行する
+        externalProcess = execFile(externalExePath, (error, stdout, stderr) => {
+            if (error) {
+                throw error;
+            }
+            console.log(stdout);
+        });
+    }
+});
 
 app.on('window-all-closed', () => {
+    // 外部プロセスが存在していれば終了する
+    if (externalProcess !== null) {
+        externalProcess.kill(); // プロセスを終了
+        externalProcess = null;
+    }
     // macOS の場合、アプリを完全に終了するのではなく
     // メニューバーに残す（ユーザーが Ctrl + Q を押すまで終了しない）ことが
     // 一般的であるため、これを表現する

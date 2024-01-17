@@ -3,6 +3,13 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"runArgs": [
+		"--rm",
+		"-v",
+		"/workspaces/ai-font-booster/frontend/node_modules",
+		"-v",
+		"/workspaces/ai-font-booster/.venv"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
